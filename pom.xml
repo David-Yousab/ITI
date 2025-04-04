@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+
+ <groupId>com.example</groupId>
+ <artifactId>nginx-container</artifactId>
+ <version>1.0.0</version>
+ <packaging>pom</packaging>
+
+ <name>NGINX Container Project</name>
+ <description>Building an NGINX Docker image using Maven</description>
+
+ <properties>
+     <docker.image>mynginx</docker.image>
+     <docker.tag>latest</docker.tag>
+ </properties>
+
+ <build>
+     <plugins>
+         <plugin>
+             <groupId>com.google.cloud.tools</groupId>
+             <artifactId>jib-maven-plugin</artifactId>
+             <version>3.4.0</version>
+             <configuration>
+                 <from>
+                     <image>nginx:latest</image>
+                 </from>
+                 <to>
+                     <image>${docker.image}:${docker.tag}</image>
+                 </to>
+                 <container>
+                     <ports>
+                         <port>80</port>
+                     </ports>
+                     <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                 </container>
+             </configuration>
+         </plugin>
+     </plugins>
+ </build>
+</project>
