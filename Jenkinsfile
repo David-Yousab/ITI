@@ -19,5 +19,11 @@ pipeline {
                 echo "Deploying the code"
             }
         }
+
+        stage('testing the webhook') {
+            steps {
+                echo "Done testing"
+            }
+        }
     }
 }
