@@ -1,0 +1,54 @@
+---
+- name: Install httpd and deploy HTML
+  hosts: all
+  become: yes
+  vars:
+    html_content: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Jenkins-Terraform-Ansible Project</title>
+      </head>
+      <body>
+          <h1>Automated Deployment by:</h1>
+          <ul>
+              <li><strong>Jenkins</strong> (CI/CD Pipeline)</li>
+              <li><strong>Terraform</strong> (AWS Infrastructure)</li>
+              <li><strong>Ansible</strong> (httpd Configuration)</li>
+          </ul>
+          <p>Instance IP: {{ ansible_host }}</p>
+      </body>
+      </html>
+
+  tasks:
+    - name: Install httpd (Amazon Linux)
+      yum:
+        name: httpd
+        state: present
+
+    - name: Ensure httpd is running and enabled
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Deploy custom HTML
+      copy:
+        content: "{{ html_content }}"
+        dest: /var/www/html/index.html
+        owner: apache
+        group: apache
+        mode: '0644'
+
+    - name: Configure firewall
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Ensure SELinux allows httpd
+      selinux:
+        policy: targeted
+        state: enforcing
+        httpd_enable_homedirs: yes
