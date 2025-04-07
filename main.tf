@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1" # You can change this
+  region = "us-east-1"
 }
 
 # 1. VPC
@@ -14,10 +14,10 @@ resource "aws_internet_gateway" "gw" {
 
 # 3. Subnet (Public)
 resource "aws_subnet" "public_subnet" {
-  vpc_id            = aws_vpc.main_vpc.id
-  cidr_block        = "10.0.1.0/24"
+  vpc_id                  = aws_vpc.main_vpc.id
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone = "us-east-1a"
+  availability_zone       = "us-east-1a"
 }
 
 # 4. Route Table
@@ -66,16 +66,21 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
-# 7. EC2 Instance
+# 7. EC2 Instance (using existing key)
 resource "aws_instance" "web_instance" {
-  ami           = "ami-0c02fb55956c7d316" # Amazon Linux 2 AMI (us-east-1)
-  instance_type = "t2.micro"
-
+  ami                    = "ami-0c02fb55956c7d316" # Amazon Linux 2 (us-east-1)
+  instance_type          = "t2.micro"
+  key_name               = "David-key" # Name of the existing key in AWS
   subnet_id              = aws_subnet.public_subnet.id
-  associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.web_sg.id]
+  associate_public_ip_address = true
 
   tags = {
     Name = "MyPublicEC2"
   }
+}
+
+# Output the public IP for SSH access
+output "instance_public_ip" {
+  value = aws_instance.web_instance.public_ip
 }
