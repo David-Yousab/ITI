@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+    tools {
+        ansible 'ansible-1'
+    }
+    stages {
+        stage('giting the cterraform files ') {
+            steps {
+                git branch: 'main' , url:'https://github.com/David-Yousab/ITI '
+            }
+        }
+        stage('run the playbook') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'david-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
+                    sh """
+                    ansible-playbook \\
+                    -i '34.201.3.104' \\
+                    --private-key=\\$SSH_KEY_FILE \\
+                    playbook.yaml
+                    """
+                }
+            }
+        }
+    }
+}
