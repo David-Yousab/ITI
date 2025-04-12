@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        ansible 'Ansible'  // Ensure this matches the name in Jenkins Global Tools
+        ansible 'Ansible'  // Must match the name in Jenkins Global Tools Configuration
     }
     stages {
         stage('Checkout Git Repo') {
@@ -9,6 +9,25 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/David-Yousab/ITI'
             }
         }
+        
+        stage('Setup SSH Access') {
+            steps {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'david-ssh-key',
+                    keyFileVariable: 'SSH_KEY_FILE'
+                )]) {
+                    sh """
+                    # Ensure proper permissions for the key
+                    chmod 600 ${SSH_KEY_FILE}
+                    
+                    # Copy public key to target server (replace ec2-user with your username)
+                    ssh-keyscan 44.203.13.10 >> ~/.ssh/known_hosts
+                    ssh-copy-id -i ${SSH_KEY_FILE} ec2-user@44.203.13.10
+                    """
+                }
+            }
+        }
+        
         stage('Run Ansible Playbook') {
             steps {
                 withCredentials([sshUserPrivateKey(
@@ -16,7 +35,11 @@ pipeline {
                     keyFileVariable: 'SSH_KEY_FILE'
                 )]) {
                     sh """
-                    ansible-playbook   -i '44.203.13.10,'    --private-key=${SSH_KEY_FILE}   playbook.yaml
+                    # Verify Ansible can connect
+                    ansible all -i '44.203.13.10,' --private-key=${SSH_KEY_FILE} -m ping
+                    
+                    # Run the playbook
+                    ansible-playbook -i '44.203.13.10,' --private-key=${SSH_KEY_FILE} playbook.yaml
                     """
                 }
             }
