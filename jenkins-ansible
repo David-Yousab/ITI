@@ -1,20 +1,25 @@
 pipeline {
     agent any
     tools {
-        ansible 'Ansible'
+        ansible 'Ansible'  // Ensure this matches the name in Jenkins Global Tools
     }
     stages {
-        stage('giting the cterraform files ') {
+        stage('Checkout Git Repo') {
             steps {
-                git branch: 'main' , url:'https://github.com/David-Yousab/ITI '
+                git branch: 'main', url: 'https://github.com/David-Yousab/ITI'
             }
         }
-        stage('run the playbook') {
+        stage('Run Ansible Playbook') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'david-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'david-ssh-key',
+                    keyFileVariable: 'SSH_KEY_FILE'
+                )]) {
                     sh """
-                    ansible --version
-
+                    ansible-playbook \
+                      -i '44.203.13.10,' \  # Trailing comma for ad-hoc inventory
+                      --private-key=${SSH_KEY_FILE} \
+                      playbook.yaml
                     """
                 }
             }
