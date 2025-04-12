@@ -1,10 +1,10 @@
 ---
-- name: Install and start Apache (httpd) on Amazon Linux
-  hosts: all  # Targets all hosts in inventory
-  become: yes  # Run tasks with sudo/root privileges
+- name: Install and start Apache on Amazon Linux
+  hosts: all
+  become: yes  # Use sudo
 
   tasks:
-    - name: Install httpd package (Amazon Linux uses yum)
+    - name: Install httpd package
       ansible.builtin.yum:
         name: httpd
         state: present
@@ -14,11 +14,3 @@
         name: httpd
         state: started
         enabled: yes
-
-    - name: Ensure default HTTP port (80) is open in the firewall
-      ansible.builtin.firewalld:
-        service: http
-        state: enabled
-        permanent: yes
-        immediate: yes
-      when: "'firewalld' in ansible_facts.services"  # Only if firewalld is installed
