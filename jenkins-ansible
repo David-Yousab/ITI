@@ -47,7 +47,7 @@ pipeline {
                     ssh -o BatchMode=yes -i ${SSH_KEY_FILE} ec2-user@44.203.13.10 exit
                     
                     # Run playbook
-                    ansible-playbook -i '44.203.13.10,' --private-key=${SSH_KEY_FILE} playbook.yaml
+                    ansible-playbook -i '44.203.13.10,'  --user=ec2-user --private-key=${SSH_KEY_FILE} playbook.yaml
                     '''
                 }
             }
