@@ -16,10 +16,7 @@ pipeline {
                     keyFileVariable: 'SSH_KEY_FILE'
                 )]) {
                     sh """
-                    ansible-playbook \
-                      -i '44.203.13.10,' \  # Trailing comma for ad-hoc inventory
-                      --private-key=${SSH_KEY_FILE} \
-                      playbook.yaml
+                    ansible-playbook   -i '44.203.13.10,'    --private-key=${SSH_KEY_FILE}   playbook.yaml
                     """
                 }
             }
