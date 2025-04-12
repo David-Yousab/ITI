@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        ansible 'Ansible'  // Must match the name in Jenkins Global Tools Configuration
+        ansible 'Ansible'
     }
     stages {
         stage('Checkout Git Repo') {
@@ -10,20 +10,28 @@ pipeline {
             }
         }
         
-        stage('Setup SSH Access') {
+        stage('Setup SSH Environment') {
             steps {
                 withCredentials([sshUserPrivateKey(
                     credentialsId: 'david-ssh-key',
                     keyFileVariable: 'SSH_KEY_FILE'
                 )]) {
-                    sh """
-                    # Ensure proper permissions for the key
-                    chmod 600 ${SSH_KEY_FILE}
+                    sh '''
+                    # Create .ssh directory if it doesn't exist
+                    mkdir -p ~/.ssh
+                    chmod 700 ~/.ssh
                     
-                    # Copy public key to target server (replace ec2-user with your username)
+                    # Add host to known_hosts
                     ssh-keyscan 44.203.13.10 >> ~/.ssh/known_hosts
-                    ssh-copy-id -i ${SSH_KEY_FILE} ec2-user@44.203.13.10
-                    """
+                    chmod 600 ~/.ssh/known_hosts
+                    
+                    # Set up SSH config
+                    echo "Host target-server" >> ~/.ssh/config
+                    echo "  HostName 44.203.13.10" >> ~/.ssh/config
+                    echo "  User ec2-user" >> ~/.ssh/config
+                    echo "  IdentityFile ${SSH_KEY_FILE}" >> ~/.ssh/config
+                    chmod 600 ~/.ssh/config
+                    '''
                 }
             }
         }
@@ -34,13 +42,13 @@ pipeline {
                     credentialsId: 'david-ssh-key',
                     keyFileVariable: 'SSH_KEY_FILE'
                 )]) {
-                    sh """
-                    # Verify Ansible can connect
-                    ansible all -i '44.203.13.10,' --private-key=${SSH_KEY_FILE} -m ping
+                    sh '''
+                    # Test connection first
+                    ssh -o BatchMode=yes -i ${SSH_KEY_FILE} ec2-user@44.203.13.10 exit
                     
-                    # Run the playbook
+                    # Run playbook
                     ansible-playbook -i '44.203.13.10,' --private-key=${SSH_KEY_FILE} playbook.yaml
-                    """
+                    '''
                 }
             }
         }
